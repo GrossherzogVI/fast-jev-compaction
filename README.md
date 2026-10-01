@@ -102,7 +102,7 @@ put it in a source file.
 | --- | --- | --- |
 | `apiKey` | `TYPESAFE_API_KEY` | TypeSafe API key (`compactMessages`/`JevClient`) |
 | `model` | `jev-latest` | Jev model name |
-| `baseUrl` | `https://api.typesafe.ai/v1/systemone` | System One endpoint |
+| `baseUrl` | `https://api.typesafe.ai/v1/systemone` | System One endpoint. A URL ending in `/v1` (e.g. Requesty `https://router.eu.requesty.ai/v1` with model `typesafe/jev-1.13.0`) is called as `POST <baseUrl>/chat/completions` with `response_format: {type: "questions", questions}`; answers are read from `choices[0].message.content` |
 | `fetch` | native `fetch` | Injectable fetch implementation for tests |
 | `goal` | last 3 user prompts | Ongoing task description included in the state |
 | `keepThreshold` | `0.5` | Minimum keep probability for a call or result to stay |

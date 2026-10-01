@@ -1,6 +1,6 @@
 {
   "name": "fast-jev-compaction",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Verbatim Jev-guided compaction for Claude Code sessions.",
   "license": "MIT",
   "userConfig": {
@@ -51,6 +51,11 @@
       "title": "Truncated tool result head",
       "description": "Characters of a tool result kept when Jev decides its full output is no longer needed; 0 keeps only the note.",
       "default": 300
+    },
+    "baseUrl": {
+      "type": "string",
+      "title": "Base URL",
+      "description": "Endpoint override. A URL ending in /v1 (e.g. a Requesty router) is called as chat completions; leave unset for TypeSafe System One."
     },
     "model": {
       "type": "string",

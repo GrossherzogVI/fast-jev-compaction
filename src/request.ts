@@ -20,18 +20,29 @@ export function buildJevRequest(
   state: JevState,
   questions: JevQuestions,
 ): JevRequest {
+  const headers = {
+    authorization: `Bearer ${params.apiKey}`,
+    'content-type': 'application/json',
+  };
+  const model = params.model ?? DEFAULT_MODEL;
+  // Router mode (Requesty): a `/v1` base speaks chat completions, questions ride in response_format.
+  if (params.baseUrl && /\/v1\/?$/.test(params.baseUrl)) {
+    return {
+      url: `${params.baseUrl.replace(/\/$/, '')}/chat/completions`,
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: typeof state === 'string' ? state : JSON.stringify(state) }],
+        response_format: { type: 'questions', questions },
+      }),
+    };
+  }
   return {
     url: params.baseUrl ?? SYSTEM_ONE_URL,
     method: 'POST',
-    headers: {
-      authorization: `Bearer ${params.apiKey}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: params.model ?? DEFAULT_MODEL,
-      state,
-      questions,
-    }),
+    headers,
+    body: JSON.stringify({ model, state, questions }),
   };
 }
 
@@ -49,6 +60,16 @@ export function parseJevResponse(
     parsed = JSON.parse(text);
   } catch {
     throw new Error('Jev returned malformed JSON');
+  }
+  // Router mode: answers arrive as a JSON string in choices[0].message.content.
+  const content = (parsed as { choices?: { message?: { content?: unknown } }[] } | null)?.choices?.[0]
+    ?.message?.content;
+  if (typeof content === 'string') {
+    try {
+      parsed = { answers: JSON.parse(content) };
+    } catch {
+      throw new Error('Jev returned malformed JSON');
+    }
   }
   if (
     parsed === null ||

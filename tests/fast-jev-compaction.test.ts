@@ -410,6 +410,27 @@ describe('HTTP client', () => {
     expect(parseJevResponse(200, true, '{"answers":{}}')).toEqual({ answers: {} });
   });
 
+  it('speaks chat completions to a /v1 router and unwraps its answers', () => {
+    const questions = { q1: { type: 'noul' as const, instructions: 'x' } };
+    const request = buildJevRequest(
+      { apiKey: 'k', model: 'typesafe/jev-1.13.0', baseUrl: 'https://router.eu.requesty.ai/v1' },
+      { a: 1 },
+      questions,
+    );
+    expect(request.url).toBe('https://router.eu.requesty.ai/v1/chat/completions');
+    expect(JSON.parse(request.body)).toEqual({
+      model: 'typesafe/jev-1.13.0',
+      messages: [{ role: 'user', content: '{"a":1}' }],
+      response_format: { type: 'questions', questions },
+    });
+    const body = JSON.stringify({
+      choices: [{ message: { content: '{"q1":{"noul":0.9,"type":"noul"}}' } }],
+    });
+    expect(parseJevResponse(200, true, body)).toEqual({
+      answers: { q1: { noul: 0.9, type: 'noul' } },
+    });
+  });
+
   it('asks over fetch and refuses to run without a key', async () => {
     const bodies: string[] = [];
     const client = new JevClient({
